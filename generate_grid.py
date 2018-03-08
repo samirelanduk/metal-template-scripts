@@ -31,7 +31,7 @@ grid = model.grid(size=size)
 if trim is not None:
 
     def check_point(point):
-        atoms_in_sphere = model.atoms_in_sphere(*point, trim)
+        atoms_in_sphere = model.atoms_in_sphere(*point, trim, metal=False)
         return (point if len(atoms_in_sphere) > 0 else None)
 
     print("Trimming grid...")
