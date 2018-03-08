@@ -3,6 +3,8 @@
 import atomium
 import sys
 from tqdm import tqdm
+import multiprocessing
+from multiprocessing import Pool
 
 if len(sys.argv) == 1:
     print("Please provide a PDB")
@@ -27,11 +29,16 @@ grid = model.grid(size=size)
 
 # Should the grid be trimmed to only include those near an atom?
 if trim is not None:
-    trimmed = []
+
+    def check_point(point):
+        atoms_in_sphere = model.atoms_in_sphere(*point, trim)
+        return (point if len(atoms_in_sphere) > 0 else None)
+
     print("Trimming grid...")
-    for coordinate in tqdm(grid):
-        if len(model.atoms_in_sphere(*coordinate, trim)) > 0:
-            trimmed.append(coordinate)
+    with Pool() as p:
+        trimmed = list(tqdm(p.imap(check_point, grid), total=len(grid)))
+
+    trimmed = list(filter(bool, trimmed))
     print("{} grid points were trimmed to {} relevant grid points".format(
      len(grid), len(trimmed)
     ))
