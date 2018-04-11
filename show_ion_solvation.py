@@ -12,11 +12,10 @@ if len(sys.argv) == 1:
 # Get model and atom for each PDB
 pdbs = []
 for arg in sys.argv[1:-2]:
-    print("Processing", arg)
     pdb, atom_id = arg.split(":")
-    model = atomium.pdb_from_file(pdb + ".pdb").model()
+    model = atomium.pdb_from_file(pdb + ".pdb").model
     pdbs.append({
-     "model": model, "atom": model.atom(atom_id=int(atom_id))
+     "model": model, "atom": model.atom(id=int(atom_id))
     })
 radius = float(sys.argv[-2])
 step = float(sys.argv[-1])
@@ -28,8 +27,8 @@ while x[-1] < radius:
 ys = []
 for pdb in pdbs:
     ys.append([biometal.solvation(
-     pdb["model"], *pdb["atom"].location(), radius, het=False
-    ) for radius in x])
+     pdb["model"], *pdb["atom"].location, radius, metal=False
+    ) / 1000 for radius in x])
 
 y = [sum(values) / len(values) for values in zip(*ys)]
 y = [val if val or y[index - 1] else None for index, val in enumerate(y)]
@@ -40,7 +39,10 @@ for i, y_ in enumerate(ys):
 plt.plot([0, radius], [0, 0], "--", linewidth=1, color="#000000")
 plt.plot([0, radius], [7, 7], "--", linewidth=1, alpha=0.2, color="#000000")
 plt.xlim([0, radius])
-plt.ylim([-30, 10])
+plt.ylim([-0.03, 0.01])
+plt.title("$Zn^{2+}$")
+plt.xlabel("R, Å")
+plt.ylabel(r"$\langle \Delta \sigma \rangle,  kcal \cdot mol^{-1} \cdot Å^{-2}$")
 plt.legend()
-plt.yticks([-30, -20, -10, 0, 10])
+plt.yticks([-0.03, -0.02, -0.01, 0, 0.01])
 plt.show()
